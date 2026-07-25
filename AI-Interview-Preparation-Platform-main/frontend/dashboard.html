@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="user-nav">
+  <h2>📊 Analytics</h2>
+  <div class="nav-links">
+    <a href="dashboard.html" class="active">My Dashboard</a>
+    <a href="admin-dashboard.html" id="adminLink" style="display: none;">🔐 Admin Panel</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+</nav>
+
+<div class="dashboard-container">
+  <h1>📊 Interview Analytics Dashboard</h1>
+
+  <!-- OVERVIEW STATS -->
+  <div class="card">
+    <h2>Overview</h2>
+    <p>Total Attempts: <span id="totalAttempts">-</span></p>
+    <p>Average Score: <span id="averageScore">-</span></p>
+    <p>Best Score: <span id="bestScore">-</span></p>
+    <p>Worst Score: <span id="worstScore">-</span></p>
+  </div>
+
+  <!-- CHARTS SECTION -->
+  <div class="card chart-container">
+    <h2>📈 Score Trend</h2>
+    <canvas id="scoreTrendChart"></canvas>
+  </div>
+
+  <div class="card chart-container">
+    <h2>📊 Attempts by Role</h2>
+    <canvas id="roleChart"></canvas>
+  </div>
+
+  <div class="card chart-container">
+    <h2>🎯 Performance Metrics</h2>
+    <canvas id="strengthChart"></canvas>
+  </div>
+
+  <!-- STRENGTHS & WEAKNESSES -->
+  <div class="card">
+    <h2>💪 Strengths</h2>
+    <ul id="strengths"></ul>
+
+    <h2>⚠️ Areas for Improvement</h2>
+    <ul id="weaknesses"></ul>
+  </div>
+
+  <!-- SCORES BY ROLE -->
+  <div class="card">
+    <h2>📚 Scores by Role & Level</h2>
+    <ul id="scoresByRole"></ul>
+  </div>
+</div>
+
+<!-- Load config.js FIRST -->
+<script src="js/config.js"></script>
+
+<!-- Then other scripts -->
+<script src="js/auth.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/reports.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Show admin link if user is admin -->
+<script>
+  // Check if user is admin and show admin link
+  function checkAdminAccess() {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        if (decoded.role === 'admin') {
+          document.getElementById('adminLink').style.display = 'inline-block';
+        }
+      } catch (e) {
+        console.error("Error checking admin access:", e);
+      }
+    }
+  }
+  
+  function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+  }
+  
+  checkAdminAccess();
+</script>
+<!-- Add this button in dashboard.html -->
+<div class="card">
+  <h2>📥 Download Reports</h2>
+  <button onclick="downloadPDFReport()" class="btn-download">
+    Download PDF Report
+  </button>
+  <button onclick="downloadCSVReport()" class="btn-download">
+    Download CSV Report
+  </button>
+</div>
+<!-- Add this after the Overview card in dashboard.html -->
+<div class="card" style="text-align: center; padding: 30px;">
+  <h2>🎯 Ready to Practice?</h2>
+  <p style="margin: 20px 0;">Take a mock interview and get instant AI feedback!</p>
+  <a href="interview-start.html" style="
+    display: inline-block;
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #46799e, #667eea);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+  ">
+    🚀 Start New Interview
+  </a>
+</div>
+
+</body>
+</html>

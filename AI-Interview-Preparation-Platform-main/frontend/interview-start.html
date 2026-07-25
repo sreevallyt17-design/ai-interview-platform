@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Start Interview - AI Interview Preparation Platform</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <style>
+      .start-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+      }
+
+      .form-section {
+        margin-bottom: 30px;
+      }
+
+      .form-section label {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #ffc004d4;
+      }
+
+      select {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 1rem;
+        border: 2px solid #46799e;
+        border-radius: 10px;
+        background: #ffffff;
+        cursor: pointer;
+      }
+
+      .btn-start {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #46799e, #667eea);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-start:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(70, 121, 158, 0.4);
+      }
+
+      .back-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .back-link a {
+        color: #ffc004d4;
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="user-nav">
+      <h2>🎯 Start Interview</h2>
+      <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="admin-dashboard.html" id="adminLink" style="display: none"
+          >🔐 Admin Panel</a
+        >
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </nav>
+
+    <div class="card start-container">
+      <h1 style="text-align: center; color: #ffc004d4">
+        🎤 Start New Interview
+      </h1>
+
+      <div class="form-section">
+        <label for="role">Select Job Role:</label>
+        <select id="role">
+          <option value="">-- Choose a role --</option>
+          <option value="Software Engineer">Software Engineer</option>
+          <option value="Frontend Developer">Frontend Developer</option>
+          <option value="Backend Developer">Backend Developer</option>
+          <option value="Full Stack Developer">Full Stack Developer</option>
+          <option value="Data Analyst">Data Analyst</option>
+          <option value="Data Scientist">Data Scientist</option>
+          <option value="DevOps Engineer">DevOps Engineer</option>
+          <option value="Product Manager">Product Manager</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <label for="level">Select Difficulty Level:</label>
+        <select id="level">
+          <option value="">-- Choose difficulty --</option>
+          <option value="easy">Easy (Entry Level)</option>
+          <option value="medium">Medium (Mid Level)</option>
+          <option value="hard">Hard (Senior Level)</option>
+        </select>
+      </div>
+
+      <button class="btn-start" onclick="startInterview()">
+        🚀 Start Interview
+      </button>
+
+      <div class="back-link">
+        <a href="dashboard.html">← Back to Dashboard</a>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "login.html";
+      }
+
+      // Check admin access
+      function checkAdminAccess() {
+        if (token) {
+          try {
+            const decoded = JSON.parse(atob(token.split(".")[1]));
+            if (decoded.role === "admin") {
+              document.getElementById("adminLink").style.display =
+                "inline-block";
+            }
+          } catch (e) {}
+        }
+      }
+
+      function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+          localStorage.removeItem("token");
+          window.location.href = "login.html";
+        }
+      }
+
+      async function startInterview() {
+        const role = document.getElementById("role").value;
+        const level = document.getElementById("level").value;
+
+        if (!role || !level) {
+          alert("Please select both role and difficulty level");
+          return;
+        }
+
+        // Better questions based on role and level
+        const questions = [
+          {
+            questionText: `What are the key responsibilities of a ${role}?`,
+            modelAnswer:
+              "Responsibilities include technical skills, problem-solving, and collaboration.",
+          },
+          {
+            questionText: `Describe a challenging ${role} project you've worked on.`,
+            modelAnswer: "Should describe problem, approach, and outcome.",
+          },
+          {
+            questionText: `What tools and technologies do you use as a ${role}?`,
+            modelAnswer:
+              "Should mention relevant technologies and explain experience.",
+          },
+        ];
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/interviews`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              role,
+              level,
+              questions,
+            }),
+          });
+
+          const data = await res.json();
+          console.log("Interview created:", data); // Debug log
+
+          if (!res.ok) {
+            alert(data.message || "Failed to create interview");
+            return;
+          }
+
+          // Store interview data
+          localStorage.setItem(
+            "currentInterview",
+            JSON.stringify({
+              id: data._id,
+              role,
+              level,
+              questions: data.questions || questions,
+            }),
+          );
+
+          console.log(
+            "Stored interview:",
+            localStorage.getItem("currentInterview"),
+          ); // Debug log
+
+          window.location.href = "interview.html";
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Server error. Please try again.");
+        }
+      }
+      checkAdminAccess();
+    </script>
+  </body>
+</html>

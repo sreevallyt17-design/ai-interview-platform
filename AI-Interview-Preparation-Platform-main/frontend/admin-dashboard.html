@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/admin.css" />
+  </head>
+  <body>
+    <nav class="admin-nav">
+      <h2>🔐 Admin Panel</h2>
+      <div class="nav-links">
+        <a href="admin-dashboard.html" class="active">Dashboard</a>
+        <a href="dashboard.html">My Analytics</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </nav>
+
+    <div class="admin-container">
+      <h1>📊 Admin Dashboard</h1>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>👥 Total Users</h3>
+          <p id="totalUsers">-</p>
+        </div>
+        <div class="stat-card">
+          <h3>📝 Total Interviews</h3>
+          <p id="totalInterviews">-</p>
+        </div>
+        <div class="stat-card">
+          <h3>✅ Completed</h3>
+          <p id="completedInterviews">-</p>
+        </div>
+        <div class="stat-card">
+          <h3>📊 Avg Score</h3>
+          <p id="avgScore">-</p>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h2>Recent Users</h2>
+        <div class="table-container">
+          <table id="usersTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="5" class="loading">Loading users...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h2>Recent Interviews</h2>
+        <div class="table-container">
+          <table id="interviewsTable">
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Job Role</th>
+                <th>Level</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="interviewsTableBody">
+              <tr>
+                <td colspan="6" class="loading">Loading interviews...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/admin-auth.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>

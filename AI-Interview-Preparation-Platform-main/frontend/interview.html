@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>Interview - AI Interview Preparation Platform</title>
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <style>
+      .interview-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 30px;
+      }
+
+      .progress {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        height: 10px;
+        margin-bottom: 30px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        height: 100%;
+        transition: width 0.3s ease;
+      }
+
+      .question-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+      }
+
+      .question-number {
+        color: #ffc004d4;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .question-text {
+        font-size: 1.3rem;
+        color: #ffffff;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 15px;
+        border: 2px solid #46799e;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-family: inherit;
+        resize: vertical;
+      }
+
+      .btn-submit {
+        background: linear-gradient(135deg, #46799e, #667eea);
+        color: white;
+        padding: 15px 40px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(70, 121, 158, 0.4);
+      }
+
+      .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .feedback-card {
+        background: rgba(70, 121, 158, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .score-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #4caf50;
+        text-align: center;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="user-nav">
+      <h2>🎤 Interview in Progress</h2>
+      <div class="nav-links">
+        <span style="color: #ffc004d4" id="roleDisplay"></span>
+      </div>
+    </nav>
+
+    <div class="card interview-container">
+      <div class="progress">
+        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-number" id="questionNumber">Question 1 of 3</div>
+        <div class="question-text" id="questionText">Loading question...</div>
+
+        <textarea
+          id="answerText"
+          placeholder="Type your answer here..."
+          rows="10"
+        ></textarea>
+      </div>
+
+      <div style="text-align: center">
+        <button class="btn-submit" onclick="submitAnswer()" id="submitBtn">
+          Submit Answer
+        </button>
+      </div>
+
+      <div class="feedback-card" id="feedbackCard">
+        <h3 style="color: #ffc004d4">📊 AI Feedback</h3>
+        <div class="score-display" id="scoreDisplay"></div>
+        <div id="feedbackText"></div>
+        <div style="text-align: center; margin-top: 20px">
+          <button class="btn-submit" onclick="nextQuestion()">
+            Next Question →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first");
+        window.location.href = "login.html";
+      }
+
+      const interview = JSON.parse(
+        localStorage.getItem("currentInterview") || "{}",
+      );
+      console.log("Loaded interview:", interview); // Debug log
+
+      if (
+        !interview.id ||
+        !interview.questions ||
+        interview.questions.length === 0
+      ) {
+        alert("No active interview found or no questions available");
+        console.error("Interview data:", interview); // Debug log
+        window.location.href = "interview-start.html";
+      }
+
+      let currentQuestionIndex = 0;
+      const questions = interview.questions || [];
+      const answers = [];
+
+      console.log("Total questions:", questions.length); // Debug log
+
+      // Display role
+      document.getElementById("roleDisplay").textContent =
+        `${interview.role} - ${interview.level}`;
+
+      // Load first question
+      loadQuestion();
+
+      function loadQuestion() {
+        if (currentQuestionIndex >= questions.length) {
+          finishInterview();
+          return;
+        }
+
+        const question = questions[currentQuestionIndex];
+        document.getElementById("questionNumber").textContent =
+          `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        document.getElementById("questionText").textContent =
+          question.questionText;
+        document.getElementById("answerText").value = "";
+        document.getElementById("feedbackCard").style.display = "none";
+
+        // Update progress
+        const progress = (currentQuestionIndex / questions.length) * 100;
+        document.getElementById("progressBar").style.width = progress + "%";
+      }
+
+      async function submitAnswer() {
+        const answerText = document.getElementById("answerText").value.trim();
+
+        if (!answerText) {
+          alert("Please provide an answer");
+          return;
+        }
+
+        if (answerText.length < 20) {
+          alert(
+            "Please provide a more detailed answer (at least 20 characters)",
+          );
+          return;
+        }
+
+        const submitBtn = document.getElementById("submitBtn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Evaluating...";
+
+        try {
+          const question = questions[currentQuestionIndex];
+
+          const res = await fetch(`${API_BASE_URL}/api/interviews/answer`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              interviewId: interview.id,
+              question: question._id || currentQuestionIndex.toString(),
+              answerText: answerText,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.message || "Failed to submit answer");
+          }
+
+          // Store answer
+          answers.push({
+            question: question.questionText,
+            answer: answerText,
+            score: data.score || 0,
+          });
+
+          // Show feedback
+          displayFeedback(data);
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Failed to evaluate answer: " + error.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Answer";
+        }
+      }
+
+      function displayFeedback(data) {
+        const scoreDisplay = document.getElementById("scoreDisplay");
+        const feedbackText = document.getElementById("feedbackText");
+
+        scoreDisplay.textContent = `Score: ${data.score || "N/A"}/10`;
+
+        let feedback = '<ul style="text-align: left; color: #ffffff;">';
+        if (data.feedback) {
+          feedback += `<li><strong>Feedback:</strong> ${data.feedback}</li>`;
+        }
+        feedback += "</ul>";
+
+        feedbackText.innerHTML = feedback;
+        document.getElementById("feedbackCard").style.display = "block";
+        document.getElementById("submitBtn").style.display = "none";
+      }
+
+      function nextQuestion() {
+        currentQuestionIndex++;
+        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("submitBtn").textContent = "Submit Answer";
+        document.getElementById("submitBtn").style.display = "inline-block";
+        loadQuestion();
+      }
+
+      function finishInterview() {
+        // Calculate average score
+        const avgScore =
+          answers.length > 0
+            ? (
+                answers.reduce((sum, a) => sum + (a.score || 0), 0) /
+                answers.length
+              ).toFixed(1)
+            : 0;
+
+        localStorage.setItem(
+          "interviewResults",
+          JSON.stringify({
+            role: interview.role,
+            level: interview.level,
+            answers: answers,
+            avgScore: avgScore,
+          }),
+        );
+
+        localStorage.removeItem("currentInterview");
+        window.location.href = "interview-result.html";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+#analytics {
+  background: #f4f4f4;
+  padding: 15px;
+  width: 300px;
+  border-radius: 5px;
+}

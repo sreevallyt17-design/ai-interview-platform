@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Results - AI Interview Preparation Platform</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    .results-container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 30px;
+    }
+
+    .score-banner {
+      background: linear-gradient(135deg, #46799e, #667eea);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
+    }
+
+    .main-score {
+      font-size: 4rem;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .score-label {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .answer-card {
+      background: rgba(70, 121, 158, 0.2);
+      padding: 25px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      color: #ffc004d4;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .answer {
+      color: #ffffff;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .score-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      background: #4CAF50;
+      color: white;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #46799e, #667eea);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffc004d4;
+      border: 2px solid #ffc004d4;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(70, 121, 158, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="user-nav">
+  <h2>🎉 Interview Complete</h2>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+</nav>
+
+<div class="card results-container">
+  <div class="score-banner">
+    <div class="score-label">Your Overall Score</div>
+    <div class="main-score" id="mainScore">-</div>
+    <div class="score-label" id="roleLevel"></div>
+  </div>
+
+  <h2 style="color: #ffc004d4; margin-bottom: 20px;">📝 Your Answers & Scores</h2>
+  <div id="answersContainer"></div>
+
+  <div class="btn-group">
+    <a href="interview-start.html" class="btn btn-primary">
+      🚀 Take Another Interview
+    </a>
+    <a href="dashboard.html" class="btn btn-secondary">
+      📊 View Analytics
+    </a>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  const results = JSON.parse(localStorage.getItem('interviewResults') || '{}');
+  
+  if (!results.role) {
+    alert('No results found');
+    window.location.href = 'dashboard.html';
+  }
+
+  // Display main score
+  document.getElementById('mainScore').textContent = results.avgScore || 'N/A';
+  document.getElementById('roleLevel').textContent = `${results.role} - ${results.level}`;
+
+  // Display answers
+  const container = document.getElementById('answersContainer');
+  
+  if (results.answers && results.answers.length > 0) {
+    results.answers.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'answer-card';
+      card.innerHTML = `
+        <div class="question">Q${index + 1}: ${item.question}</div>
+        <div class="answer">${item.answer}</div>
+        <div style="margin-top: 10px;">
+          <span class="score-badge">Score: ${item.score || 'N/A'}/10</span>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } else {
+    container.innerHTML = '<p style="color: #ffffff;">No answers recorded.</p>';
+  }
+
+  // Clear results after displaying
+  setTimeout(() => {
+    localStorage.removeItem('interviewResults');
+  }, 1000);
+
+  function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+  }
+</script>
+
+</body>
+</html>
